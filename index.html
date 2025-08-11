@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aptitude Profile Analysis</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .option {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .option.selected {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+            border-color: #3b82f6; /* border-blue-600 */
+        }
+        .option:not(.selected):hover {
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        /* Simple spinner for loading state */
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <main class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-3xl">
+
+        <!-- Header -->
+        <div id="header">
+            <h1 class="text-3xl font-bold text-gray-900 text-center">Advanced Aptitude Analysis</h1>
+            <p class="text-center text-gray-600 mt-2">Answer the following questions to discover your underlying cognitive profile.</p>
+        </div>
+
+        <!-- Questionnaire Container -->
+        <div id="questionnaire-container" class="mt-8 space-y-6">
+            <!-- Questions will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <!-- Submit Button -->
+        <div id="submit-section" class="mt-8 text-center">
+            <button id="submit-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                Analyze My Profile
+            </button>
+            <p id="validation-message" class="text-red-500 text-sm mt-2 hidden">Please answer all questions before submitting.</p>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-section" class="hidden flex-col items-center justify-center mt-8 py-16">
+            <div class="loader"></div>
+            <p class="mt-4 text-gray-600 font-medium">Analyzing your cognitive profile...</p>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result-section" class="hidden text-center mt-8 py-8">
+            <p class="text-gray-600 text-lg">Based on your responses, your profile aligns with:</p>
+            <h2 id="result-text" class="text-5xl font-bold text-blue-600 mt-4"></h2>
+            <button id="restart-btn" class="mt-8 bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-all">
+                Take the Test Again
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // IMPORTANT: Replace "YOUR_GEMINI_API_KEY" with your actual Gemini API Key
+        // You can get a key from Google AI Studio: https://aistudio.google.com/app/apikey
+        const GEMINI_API_KEY = "AIzaSyDEuWa63F8PXdWGTkrOwyNkQlg3-AgKdRo";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        const PROMPT_TEMPLATE = `
+You are a sophisticated psychometric analyst. Your task is to analyze the user's answers to the following questionnaire to determine their core aptitude. Classify their profile into a single category: Science, Commerce, or Arts.
+
+The questions and options are deliberately nuanced and do not map directly to the categories. Your classification should be based on the holistic pattern of all responses combined. Respond with a single word only.
+
+### Questionnaire
+{questionnaire}
+
+### User's Answers
+{answers}
+
+### Classification
+`;
+
+        const QUESTIONS = {
+            "Q1": { "text": "A long-term project you are leading fails to meet its primary objective. What is your immediate priority?", "options": { "1": "To perform a detailed, data-driven root-cause analysis to create a report ensuring the same error never repeats.", "2": "To immediately pivot the strategy, focusing on what can be salvaged and what 'lessons learned' can be applied to the next goal.", "3": "To check in on team morale and facilitate a conversation about the emotional impact of the setback before moving forward." } },
+            "Q2": { "text": "Which of these two potential documentaries sounds more compelling to you?", "options": { "1": "One that meticulously debunks common myths about a complex scientific topic using expert interviews and data visualizations.", "2": "One that follows the life of a controversial, misunderstood historical figure, exploring their motivations and legacy through a narrative lens." } },
+            "Q3": { "text": "You are unexpectedly given $10,000 for a personal project. Which path is most appealing?", "options": { "1": "Use it as seed money to attract a larger investment, aiming to scale the project's impact and reach significantly.", "2": "Invest it in high-quality tools, software, or equipment that will enable a more precise and sophisticated final product.", "3": "Spend it on travel and collaborations that will enrich your creative process and lead to a more inspired outcome." } },
+            "Q4": { "text": "You need to persuade a skeptical authority figure. What is your primary strategy?", "options": { "1": "Present an undeniable, data-backed case supported by logical proofs and empirical evidence.", "2": "Appeal to their self-interest by framing your proposal as a mutually beneficial opportunity that aligns with their goals.", "3": "Craft a compelling story that connects with them on an emotional level and makes them believe in the vision.", "4": "Build a coalition of supporters to demonstrate a strong consensus and create social proof." } },
+            "Q5": { "text": "Which statement best reflects your view of the world?", "options": { "1": "The world is a complex system of interlocking variables that can be understood and optimized through careful analysis.", "2": "The world is a grand narrative of human struggle, emotion, and expression, rich with meaning and symbolism.", "3": "The world is a marketplace of ideas, resources, and influence, driven by strategic competition and cooperation." } },
+            "Q6": { "text": "When you read a compelling non-fiction book, you are most likely to...", "options": { "1": "Question the author's underlying assumptions and look for potential flaws in their logic.", "2": "Distill the key arguments into an actionable summary you can apply in your own life or work.", "3": "Reflect on how the book's ideas connect to broader themes of society, history, or the human condition." } },
+            "Q7": { "text": "Which mistake is worse?", "options": { "1": "Failing to act on a promising opportunity that you were uncertain about.", "2": "Acting on an opportunity that ultimately failed, wasting resources." } },
+            "Q8": { "text": "You feel most energized and 'in the zone' when you are...", "options": { "1": "Competing in a high-stakes environment where your decisions have immediate consequences.", "2": "Collaborating with a small group to bring a shared creative vision to life.", "3": "Deeply immersed in solving a complex abstract problem or puzzle by yourself." } },
+            "Q9": { "text": "Which virtue do you believe is most underrated in today's society?", "options": { "1": "Patience", "2": "Audacity", "3": "Empathy" } },
+            "Q10": { "text": "How do you prefer to receive feedback on your work?", "options": { "1": "As a blunt, direct critique focusing on areas for improvement, without sugar-coating.", "2": "As a collaborative dialogue, discussing strengths and weaknesses in the context of the project's goals.", "3": "As a gentle and encouraging conversation, focusing first on what works before suggesting changes." } },
+            "Q11": { "text": "You have to choose between two job offers with the same pay. What's the deciding factor?", "options": { "1": "The job with more stability, a clearer career path, and well-defined responsibilities.", "2": "The job with more ambiguity, but with a higher potential for growth and reward if you succeed." } },
+            "Q12": { "text": "In a team discussion, what role do you naturally play?", "options": { "1": "The one who builds consensus and focuses the team on the practical, achievable goal.", "2": "The one who questions assumptions, plays devil's advocate, and pressure-tests the logic of the plan.", "3": "The one who ensures every voice is heard and synthesizes different perspectives into a cohesive whole." } },
+            "Q13": { "text": "For you, where do the best ideas come from?", "options": { "1": "A systematic process of iteration, experimentation, and elimination.", "2": "A sudden, unpredictable moment of inspiration or insight.", "3": "A dynamic brainstorming session where ideas build off one another." } },
+            "Q14": { "text": "You are designing a new city park. What is your absolute top priority?", "options": { "1": "The ecological sustainability and efficiency of the park's systems (e.g., water recycling, native plants).", "2": "The economic viability and its ability to host profitable events that fund its own maintenance.", "3": "The aesthetic beauty and how the park's design makes people feel as they walk through it." } },
+            "Q15": { "text": "Which is a more valuable skill?", "options": { "1": "Deep, specialized expertise in a single, complex field.", "2": "Broad, connective knowledge that allows you to see how different fields interact." } },
+            "Q16": { "text": "When assembling furniture with instructions, you are most likely to...", "options": { "1": "Follow the instructions precisely, step-by-step, to ensure a perfect result.", "2": "Use the instructions as a general guide but rely on your own intuition to assemble it faster.", "3": "Try to assemble it without the instructions first, only referring to them if you get stuck." } },
+            "Q17": { "text": "Which description of a leader do you admire more?", "options": { "1": "A visionary who inspires people with a powerful and original vision for the future.", "2": "A strategist who can outmaneuver competitors and navigate complex organizational politics to achieve success.", "3": "A brilliant architect who can design elegant and robust systems that function flawlessly." } }
+        };
+
+        // --- 2. DOM ELEMENTS ---
+        const questionnaireContainer = document.getElementById('questionnaire-container');
+        const submitBtn = document.getElementById('submit-btn');
+        const validationMessage = document.getElementById('validation-message');
+        const headerSection = document.getElementById('header');
+        const submitSection = document.getElementById('submit-section');
+        const loadingSection = document.getElementById('loading-section');
+        const resultSection = document.getElementById('result-section');
+        const resultText = document.getElementById('result-text');
+        const restartBtn = document.getElementById('restart-btn');
+
+        let userAnswers = {};
+
+        // --- 3. FUNCTIONS ---
+
+        /**
+         * Renders the questions and options to the DOM.
+         */
+        function renderQuestions() {
+            questionnaireContainer.innerHTML = ''; // Clear previous content
+            for (const qId in QUESTIONS) {
+                const qData = QUESTIONS[qId];
+                
+                // Create question card
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card bg-white p-6 rounded-xl border border-gray-200';
+                questionCard.id = qId;
+
+                // Create question text
+                const questionText = document.createElement('p');
+                questionText.className = 'font-semibold text-lg text-gray-800';
+                questionText.textContent = `${qId}. ${qData.text}`;
+                questionCard.appendChild(questionText);
+
+                // Create options container
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'mt-4 space-y-3';
+                
+                for (const oId in qData.options) {
+                    const option = document.createElement('div');
+                    option.className = 'option border border-gray-300 p-4 rounded-lg';
+                    option.dataset.qId = qId;
+                    option.dataset.oId = oId;
+                    option.textContent = qData.options[oId];
+                    
+                    option.addEventListener('click', handleOptionSelect);
+                    optionsContainer.appendChild(option);
+                }
+
+                questionCard.appendChild(optionsContainer);
+                questionnaireContainer.appendChild(questionCard);
+            }
+        }
+
+        /**
+         * Handles the selection of an answer option.
+         * @param {Event} e - The click event.
+         */
+        function handleOptionSelect(e) {
+            const selectedOption = e.currentTarget;
+            const qId = selectedOption.dataset.qId;
+            const oId = selectedOption.dataset.oId;
+
+            // Store the answer
+            userAnswers[qId] = oId;
+
+            // Update styling for visual feedback
+            const optionsInGroup = document.querySelectorAll(`.option[data-q-id="${qId}"]`);
+            optionsInGroup.forEach(opt => opt.classList.remove('selected'));
+            selectedOption.classList.add('selected');
+        }
+
+        /**
+         * Handles the form submission, validation, and API call.
+         */
+        async function handleSubmit() {
+            // Validate that all questions are answered
+            if (Object.keys(userAnswers).length !== Object.keys(QUESTIONS).length) {
+                validationMessage.classList.remove('hidden');
+                return;
+            }
+            validationMessage.classList.add('hidden');
+
+            // Check for placeholder API key
+            if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+                alert("Please replace 'YOUR_GEMINI_API_KEY' in the script with your actual Gemini API key.");
+                return;
+            }
+
+            // Show loading state
+            headerSection.classList.add('hidden');
+            questionnaireContainer.classList.add('hidden');
+            submitSection.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+            
+            // Format the questionnaire and answers for the prompt
+            let questionnaireText = "";
+            for (const qId in QUESTIONS) {
+                questionnaireText += `${qId}. ${QUESTIONS[qId].text}\n`;
+                for (const oId in QUESTIONS[qId].options) {
+                    questionnaireText += `    (${oId}) ${QUESTIONS[qId].options[oId]}\n`;
+                }
+            }
+            const answersText = Object.entries(userAnswers).map(([q, a]) => `${q}-${a}`).join(', ');
+            const finalPrompt = PROMPT_TEMPLATE.replace('{questionnaire}', questionnaireText).replace('{answers}', answersText);
+            
+            // Make the API call
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const result = data.candidates[0].content.parts[0].text;
+                
+                // Display the result
+                resultText.textContent = result.trim();
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                resultText.textContent = "Error";
+                document.getElementById('result-section').querySelector('p').textContent = "Sorry, an error occurred while analyzing your profile. Please check the console for details.";
+            } finally {
+                // Show result section
+                loadingSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+            }
+        }
+        
+        /**
+         * Resets the application to its initial state.
+         */
+        function restartTest() {
+            userAnswers = {};
+            resultSection.classList.add('hidden');
+            headerSection.classList.remove('hidden');
+            questionnaireContainer.classList.remove('hidden');
+            submitSection.classList.remove('hidden');
+            validationMessage.classList.add('hidden');
+            renderQuestions(); // Re-render to clear selections
+        }
+
+        // --- 4. EVENT LISTENERS ---
+        submitBtn.addEventListener('click', handleSubmit);
+        restartBtn.addEventListener('click', restartTest);
+        
+        // --- 5. INITIALIZATION ---
+        // Render the questions when the page loads
+        window.onload = renderQuestions;
+
+    </script>
+</body>
+</html>
