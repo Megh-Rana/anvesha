@@ -25,16 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginModal = document.getElementById('login-modal');
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
-
-    // Get the new elements from the updated HTML
     const formTitle = document.getElementById('form-title');
     const formButton = document.getElementById('form-button');
     const toggleToRegister = document.getElementById('toggle-to-register');
     const toggleToLogin = document.getElementById('toggle-to-login');
     const registerLink = document.getElementById('register-link');
     const loginLink = document.getElementById('login-link');
-    
-    // Create and add a logout button
+
     const nav = document.querySelector('nav');
     const logoutBtn = document.createElement('a');
     logoutBtn.href = '#';
@@ -43,30 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'none';
     nav.appendChild(logoutBtn);
 
-    // This variable will track if we are in Login or Register mode
     let isRegisterMode = false;
 
-    // Listen for clicks on the "Register" link
     registerLink.addEventListener('click', () => {
         isRegisterMode = true;
         formTitle.textContent = 'Register';
         formButton.textContent = 'Register';
         toggleToRegister.classList.add('hidden');
         toggleToLogin.classList.remove('hidden');
-        loginError.textContent = ''; // Clear errors
+        loginError.textContent = '';
     });
 
-    // Listen for clicks on the "Login" link
     loginLink.addEventListener('click', () => {
         isRegisterMode = false;
         formTitle.textContent = 'Login';
         formButton.textContent = 'Login';
         toggleToRegister.classList.remove('hidden');
         toggleToLogin.classList.add('hidden');
-        loginError.textContent = ''; // Clear errors
+        loginError.textContent = '';
     });
 
-    // Handle form submission
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
@@ -74,32 +67,26 @@ document.addEventListener('DOMContentLoaded', () => {
         loginError.textContent = '';
 
         if (isRegisterMode) {
-            // --- REGISTER LOGIC ---
             auth.createUserWithEmailAndPassword(email, password)
                 .catch(error => {
                     loginError.textContent = error.message;
                 });
         } else {
-            // --- LOGIN LOGIC ---
             auth.signInWithEmailAndPassword(email, password)
                 .catch(error => {
                     loginError.textContent = error.message;
                 });
         }
     });
-    
-    // Checks if a user is logged in (this part stays the same)
+
     auth.onAuthStateChanged(user => {
         if (user) {
             loginModal.classList.remove('visible');
-
-            // Reset the form to login mode for the next time it opens
             isRegisterMode = false;
             formTitle.textContent = 'Login';
             formButton.textContent = 'Login';
             toggleToRegister.classList.remove('hidden');
             toggleToLogin.classList.add('hidden');
-
             homePage.classList.remove('hidden');
             logoutBtn.style.display = 'inline-block';
         } else {
@@ -110,15 +97,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle logout (this part stays the same)
     logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         auth.signOut();
     });
 
-
     // --- ASSESSMENT ELEMENTS & LOGIC ---
-    const questions = { /* Your 21 questions here... */ };
+    const questions = {
+        'Q1': {"text": "A big project you lead fails. What do you do first?", "options": {"1": "Find out exactly what went wrong using facts and data.", "2": "Change the plan quickly and save what you can.", "3": "Talk to the team and check how they are feeling."}},
+        'Q2': {"text": "Which documentary would you like to watch more?", "options": {"1": "One that explains the truth about a science topic using experts and facts.", "2": "One about the life of a famous person, showing their story and feelings.", "3": "One about how businesses or innovations grew, showing their journey and strategies."}},
+        'Q3': {"text": "You suddenly get ₹10,000 for your project. How do you use it?", "options": {"1": "Use it to attract more money to make the project bigger.", "2": "Buy the best tools or software to make your work better.", "3": "Travel or meet people who inspire your ideas."}},
+        'Q4': {"text": "You must convince someone who doubts you. What do you do?", "options": {"1": "Show proof, data, and logic.", "2": "Show how it will benefit them personally.", "3": "Tell a story that makes them imagine it working."}},
+        'Q5': {"text": "Which statement feels most true to you?", "options": {"1": "The world is like a puzzle—you can solve it by study and analysis.", "2": "The world is full of emotions and stories.", "3": "The world works like a market of ideas and teamwork."}},
+        'Q6': {"text": "After reading a non-fiction book, what do you do?", "options": {"1": "Check if the facts are correct and logical.", "2": "Note the main points and think how to use them.", "3": "Link it to bigger ideas about life or society."}},
+        'Q7': {"text": "Which mistake is worse?", "options": {"1": "Missing a good chance because you were unsure.", "2": "Taking a chance and failing.", "3": "Spending too much time planning and never starting."}},
+        'Q8': {"text": "When do you feel most focused?", "options": {"1": "When competing in a high-pressure situation.", "2": "When creating something with a small team.", "3": "When solving a tough problem alone."}},
+        'Q9': {"text": "Which quality is not valued enough today?", "options": {"1": "Patience", "2": "Confidence", "3": "Kindness"}},
+        'Q10': {"text": "How do you like feedback?", "options": {"1": "Direct and honest—just tell me what’s wrong.", "2": "A balanced talk about strengths and weaknesses.", "3": "Start with what’s good, then suggest improvements."}},
+        'Q11': {"text": "Two jobs, same pay. Which do you choose?", "options": {"1": "The safer job with clear steps and role.", "2": "The riskier job with bigger rewards if you succeed.", "3": "The job that lets you be more creative and flexible."}},
+        'Q12': {"text": "In group work, you are usually the one who…", "options": {"1": "Keeps the group focused on the goal.", "2": "Tests if the plan will really work.", "3": "Makes sure everyone’s ideas are heard."}},
+        'Q13': {"text": "Where do your best ideas come from?", "options": {"1": "Testing and improving step-by-step.", "2": "Sudden inspiration.", "3": "Talking and Group brainstorming with others"}},
+        'Q14': {"text": "You design a city park. What matters most?", "options": {"1": "Eco-friendly and sustainable systems", "2": "Earning money from events to maintain it.", "3": "Beautiful design and feeling for visitors."}},
+        'Q15': {"text": "Which is a more valuable skill?", "options": {"1": "Deep knowledge of one subject.", "2": "Knowledge of many subjects and how they connect.", "3": "Practical skills that can be directly applied to real-life work."}},
+        'Q16': {"text": "Putting furniture together with instructions, you…", "options": {"1": "Follow each step exactly.", "2": "Use instructions as a guide but rely on your own way.", "3": "Try without instructions first."}},
+        'Q17': {"text": "Which leader do you admire more?", "options": {"1": "A visionary with a powerful future plan.", "2": "A strategist who outsmarts challenges.", "3": "A designer who makes perfect systems."}},
+        'Q18': {"text": "A group project goes well. What’s the first thing you do?", "options": {"1": "Study what steps worked best.", "2": "Think of how to make it even better.", "3": "Thank and appreciate the team."}},
+        'Q19': {"text": "You can attend one free workshop. Which do you choose?", "options": {"1": "Science experiments.", "2": "Filmmaking and storytelling.", "3": "Starting a business."}},
+        'Q20': {"text": "After reading something interesting, you…", "options": {"1": "Check if it’s true and accurate.", "2": "Think how to use it.", "3": "Link it to big ideas about life."}},
+        'Q21': {"text": "You feel most excited when…", "options": {"1": "Solving a problem alone.", "2": "Working creatively with others.", "3": "Competing and making quick decisions."}}
+    };
     const questionKeys = Object.keys(questions);
     const totalQuestions = questionKeys.length;
     let currentQuestionIndex = 0;
@@ -135,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToHomeBtn = document.getElementById('back-to-home-btn');
 
     function showPage(pageToShow) {
-        // This function is simple now: just hide/show the assessment page
         homePage.classList.add('hidden');
         assessmentPage.classList.remove('hidden');
     }
@@ -148,10 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadQuestion() {
-        if (!assessmentCard) return; // Safety check
+        if (!assessmentCard) return;
         assessmentCard.classList.add('fade-out');
         setTimeout(() => {
-            // ... (rest of your loadQuestion function is fine)
             const questionKey = questionKeys[currentQuestionIndex];
             const questionData = questions[questionKey];
             progressText.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestions}`;
@@ -204,12 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function finishAssessment() {
         console.log("Assessment Finished. User Responses:", userAnswers);
         alert("Thank you for completing the assessment!");
-        // After finishing, show the home page again
         homePage.classList.remove('hidden');
         assessmentPage.classList.add('hidden');
     }
 
-    // Event Listeners for the assessment part
     if (startJourneyBtn) startJourneyBtn.addEventListener('click', startAssessment);
     if (navTakeSurvey) navTakeSurvey.addEventListener('click', (e) => {
         e.preventDefault();
