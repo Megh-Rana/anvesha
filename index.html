@@ -29,26 +29,23 @@
     <div id="home-page">
         <header>
             <div class="logo">
-                <img src="https://assets-global.website-files.com/6210005662340457f35363f7/6210023a6234046162536831_Logo.svg" alt="Anvesha Logo">
+                <img src="logo.png" alt="Anvesha Logo">
                 <span>Anvesha</span>
             </div>
             <nav>
                 <a href="#" class="nav-link active">Home</a>
                 <a href="#" class="nav-link" id="nav-take-survey">Take Survey</a>
                 <a href="#" class="nav-link">AI Suggestions</a>
-                <a href="#" class="nav-link">Scholarships</a>
-                <a href="#" class="nav-link">Login</a>
             </nav>
         </header>
 
         <main>
             <section class="hero">
-                <p class="trusted-by">Trusted by 10,000+ students</p>
+                <p class="trusted-by">Extensive Dataset of 500+ Students</p>
                 <h1>Discover Your <span class="highlight-green">Perfect Career</span> Path with AI</h1>
-                <p class="sub-heading">Let Anvesha guide you through the maze of career choices. Get personalized recommendations for streams, courses, and colleges based on your unique profile.</p>
+                <p class="sub-heading">Let Anvesha guide you through the maze of career choices. Get personalized recommendations for streams based on your unique profile.</p>
                 <div class="cta-buttons">
                     <button class="btn btn-primary" id="start-journey-btn">Start Your Journey →</button>
-                    <button class="btn btn-secondary">Explore Scholarships</button>
                 </div>
             </section>
             
@@ -63,26 +60,12 @@
                     <h3>Perfect Stream Match</h3>
                     <p>Find the ideal academic stream that aligns with your goals and abilities.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="icon-bg">🎓</div>
-                    <h3>Scholarship Finder</h3>
-                    <p>Discover relevant scholarships and avoid educational loans.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon-bg">🌍</div>
-                    <h3>Study Abroad Guide</h3>
-                    <p>Complete roadmap for international education opportunities.</p>
-                </div>
             </section>
 
             <section class="stats">
                 <div class="stat-item">
-                    <h2>10,000+</h2>
-                    <p>Students Guided</p>
-                </div>
-                <div class="stat-item">
                     <h2>500+</h2>
-                    <p>Partner Colleges</p>
+                    <p>Students Dataset</p>
                 </div>
                 <div class="stat-item">
                     <h2>95%</h2>
@@ -111,6 +94,16 @@
                 <button class="btn btn-primary" id="next-btn">Next →</button>
             </div>
              <button class="btn-back-home" id="back-to-home-btn">← Back to Home</button>
+        </div>
+
+        <div id="result-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h2>Your Recommended Stream</h2>
+                <p>Based on your profile, we recommend:</p>
+                <h1 id="result-stream" class="highlight-green" style="font-size: 2.5rem; margin: 1rem 0;"></h1>
+                <div id="result-probabilities"></div>
+                <button id="close-result-modal" class="btn btn-primary" style="margin-top: 1rem;">Finish</button>
+            </div>
         </div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>

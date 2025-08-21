@@ -140,6 +140,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const prevBtn = document.getElementById('prev-btn');
     const backToHomeBtn = document.getElementById('back-to-home-btn');
+    
+    // --- NEW: Selectors for the result modal ---
+    const resultModal = document.getElementById('result-modal');
+    const resultStream = document.getElementById('result-stream');
+    const resultProbs = document.getElementById('result-probabilities');
+    const closeResultBtn = document.getElementById('close-result-modal');
+
+
+    // --- NEW: Load the model data ---
+    let modelData = null;
+    fetch('model.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("model.json not found. Make sure it's in the same folder as your index.html.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            modelData = data;
+            console.log("Model loaded successfully into the browser!");
+        })
+        .catch(error => {
+            console.error("Error loading model.json:", error);
+            alert("Could not load the prediction model. Please ensure 'model.json' is available.");
+        });
 
     function showPage(pageToShow) {
         homePage.classList.add('hidden');
@@ -206,12 +231,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // --- REPLACED: finishAssessment function ---
     function finishAssessment() {
-        console.log("Assessment Finished. User Responses:", userAnswers);
-        alert("Thank you for completing the assessment!");
-        homePage.classList.remove('hidden');
-        assessmentPage.classList.add('hidden');
+        if (!modelData) {
+            alert("Model is still loading, please wait a moment and try again.");
+            return;
+        }
+
+        // 1. One-Hot Encode the user's answers
+        const inputVector = modelData.columns.map(col => {
+            const [q_id, option] = col.split('_');
+            const userAnswer = userAnswers[questionKeys.indexOf(q_id)];
+            return userAnswer === option ? 1 : 0;
+        });
+
+        // 2. Predict using the local model
+        const predictionResult = predictWithLocalModel(inputVector);
+        
+        // 3. Show the results
+        showResults(predictionResult);
     }
+
+    // --- NEW: Local prediction logic ---
+    function predictWithLocalModel(inputVector) {
+        const treePredictions = [];
+        
+        for (const tree of modelData.trees) {
+            let currentNodeIndex = 0;
+            while (tree.children_left[currentNodeIndex] !== -1) {
+                const featureIndex = tree.feature[currentNodeIndex];
+                const threshold = tree.threshold[currentNodeIndex];
+                if (inputVector[featureIndex] <= threshold) {
+                    currentNodeIndex = tree.children_left[currentNodeIndex];
+                } else {
+                    currentNodeIndex = tree.children_right[currentNodeIndex];
+                }
+            }
+            treePredictions.push(tree.value[currentNodeIndex]);
+        }
+
+        const aggregateVotes = new Array(modelData.classes.length).fill(0);
+        for (const pred of treePredictions) {
+            for (let i = 0; i < pred.length; i++) {
+                aggregateVotes[i] += pred[i];
+            }
+        }
+
+        const totalVotes = aggregateVotes.reduce((sum, val) => sum + val, 0);
+        const probabilities = {};
+        let maxProb = 0;
+        let finalPrediction = '';
+
+        for (let i = 0; i < modelData.classes.length; i++) {
+            const prob = totalVotes > 0 ? aggregateVotes[i] / totalVotes : 0;
+            probabilities[modelData.classes[i]] = prob;
+            if (prob > maxProb) {
+                maxProb = prob;
+                finalPrediction = modelData.classes[i];
+            }
+        }
+
+        return {
+            prediction: finalPrediction,
+            probabilities: probabilities
+        };
+    }
+
+    // --- NEW: Function to display results in the modal ---
+    function showResults(data) {
+        resultStream.textContent = data.prediction;
+        resultProbs.innerHTML = ''; // Clear previous probabilities
+
+        // Create a nice display for the probabilities
+        const sortedProbs = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
+
+        for (const [stream, prob] of sortedProbs) {
+            const probPercent = (prob * 100).toFixed(2);
+            const probEl = document.createElement('p');
+            probEl.innerHTML = `<strong>${stream}:</strong> ${probPercent}% likely`;
+            resultProbs.appendChild(probEl);
+        }
+
+        resultModal.classList.add('visible');
+
+        closeResultBtn.onclick = () => {
+            resultModal.classList.remove('visible');
+            homePage.classList.remove('hidden');
+            assessmentPage.classList.add('hidden');
+        };
+    }
+
 
     if (startJourneyBtn) startJourneyBtn.addEventListener('click', startAssessment);
     if (navTakeSurvey) navTakeSurvey.addEventListener('click', (e) => {
