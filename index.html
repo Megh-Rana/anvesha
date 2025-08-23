@@ -108,7 +108,22 @@
     </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
-        
+    <!-- Floating chatbot icon -->
+    <div class="chatbot-icon" id="chatbotIcon" title="Open chat">
+  <!-- Simple chat bubble SVG icon -->
+      <svg viewBox="0 0 24 24">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </div>
+
+    <div class="chatbot-container hide" id="chatbotContainer">
+      <div class="chat-header">💬 ANVESHANAM</div>
+        <div id="chat-box"></div>
+          <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" />
+              <button onclick="sendMessage()">Send</button>
+          </div>
+    </div>   
     <script src="script.js"></script>
 </body>
 </html>
