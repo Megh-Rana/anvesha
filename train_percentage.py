@@ -88,7 +88,7 @@ else:
     )
     
     # Using class_weight='balanced' to help with the imbalanced dataset
-    model = RandomForestClassifier(n_estimators=100, random_state=42, class_weight='balanced')
+    model = RandomForestClassifier(n_estimators=100, random_state=42, class_weight='balanced',max_depth=10,min_samples_leaf=3)
     model.fit(X_train, y_train)
     print("Model training complete.")
 
