@@ -2,26 +2,25 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- FIREBASE CONFIGURATION ---
-    // IMPORTANT: Use your newly regenerated API key here.
     const firebaseConfig = {
-    apiKey: "AIzaSyA5mnWmZzg-oBwm3MwfT1viC3va4IMeasc",
-    authDomain: "anvesha-70ab9.firebaseapp.com",
-    projectId: "anvesha-70ab9",
-    storageBucket: "anvesha-70ab9.firebasestorage.app",
-    messagingSenderId: "613805584401",
-    appId: "1:613805584401:web:44b81d8e6a2389ddc6c1b0",
-    measurementId: "G-ZQG34Q4C35"
+        apiKey: "AIzaSyA5mnWmZzg-oBwm3MwfT1viC3va4IMeasc",
+        authDomain: "anvesha-70ab9.firebaseapp.com",
+        projectId: "anvesha-70ab9",
+        storageBucket: "anvesha-70ab9.firebasestorage.app",
+        messagingSenderId: "613805584401",
+        appId: "1:613805584401:web:44b81d8e6a2389ddc6c1b0",
+        measurementId: "G-ZQG34Q4C35"
     };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    // Get a reference to the Firebase authentication service
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
-
-    // --- LOGIN/REGISTER ELEMENTS & LOGIC ---
+    // --- PAGE & MODAL ELEMENTS ---
     const homePage = document.getElementById('home-page');
     const assessmentPage = document.getElementById('assessment-page');
+    const profilePage = document.getElementById('profile-page');
     const loginModal = document.getElementById('login-modal');
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
@@ -42,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isRegisterMode = false;
 
-    registerLink.addEventListener('click', () => {
+    // --- LOGIN/REGISTER LOGIC ---
+    if(registerLink) registerLink.addEventListener('click', () => {
         isRegisterMode = true;
         formTitle.textContent = 'Register';
         formButton.textContent = 'Register';
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginError.textContent = '';
     });
 
-    loginLink.addEventListener('click', () => {
+    if(loginLink) loginLink.addEventListener('click', () => {
         isRegisterMode = false;
         formTitle.textContent = 'Login';
         formButton.textContent = 'Login';
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginError.textContent = '';
     });
 
-    loginForm.addEventListener('submit', (e) => {
+    if(loginForm) loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -82,27 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             loginModal.classList.remove('visible');
-            isRegisterMode = false;
-            formTitle.textContent = 'Login';
-            formButton.textContent = 'Login';
-            toggleToRegister.classList.remove('hidden');
-            toggleToLogin.classList.add('hidden');
             homePage.classList.remove('hidden');
             logoutBtn.style.display = 'inline-block';
         } else {
             homePage.classList.add('hidden');
             assessmentPage.classList.add('hidden');
+            profilePage.classList.add('hidden');
             loginModal.classList.add('visible');
             logoutBtn.style.display = 'none';
         }
     });
 
-    logoutBtn.addEventListener('click', (e) => {
+    if(logoutBtn) logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         auth.signOut();
     });
 
-    // --- ASSESSMENT ELEMENTS & LOGIC ---
+    // --- ASSESSMENT & MODEL LOGIC ---
     const questions = {
         'Q1': {"text": "A big project you lead fails. What do you do first?", "options": {"1": "Find out exactly what went wrong using facts and data.", "2": "Change the plan quickly and save what you can.", "3": "Talk to the team and check how they are feeling."}},
         'Q2': {"text": "Which documentary would you like to watch more?", "options": {"1": "One that explains the truth about a science topic using experts and facts.", "2": "One about the life of a famous person, showing their story and feelings.", "3": "One about how businesses or innovations grew, showing their journey and strategies."}},
@@ -140,21 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const prevBtn = document.getElementById('prev-btn');
     const backToHomeBtn = document.getElementById('back-to-home-btn');
-    
-    // --- NEW: Selectors for the result modal ---
     const resultModal = document.getElementById('result-modal');
     const resultStream = document.getElementById('result-stream');
     const resultProbs = document.getElementById('result-probabilities');
     const closeResultBtn = document.getElementById('close-result-modal');
+    const profileBackToHomeBtn = document.getElementById('profile-back-to-home-btn');
 
-
-    // --- NEW: Load the model data ---
     let modelData = null;
     fetch('model.json')
         .then(response => {
-            if (!response.ok) {
-                throw new Error("model.json not found. Make sure it's in the same folder as your index.html.");
-            }
+            if (!response.ok) throw new Error("model.json not found.");
             return response.json();
         })
         .then(data => {
@@ -163,18 +154,23 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             console.error("Error loading model.json:", error);
-            alert("Could not load the prediction model. Please ensure 'model.json' is available.");
+            alert("Could not load the prediction model.");
         });
 
-    function showPage(pageToShow) {
+    function showPage(pageId) {
         homePage.classList.add('hidden');
-        assessmentPage.classList.remove('hidden');
+        assessmentPage.classList.add('hidden');
+        profilePage.classList.add('hidden');
+        const page = document.getElementById(pageId);
+        if (page) {
+            page.classList.remove('hidden');
+        }
     }
     
     function startAssessment() {
         currentQuestionIndex = 0;
         userAnswers.fill(null);
-        showPage(assessmentPage);
+        showPage('assessment-page');
         loadQuestion();
     }
 
@@ -231,31 +227,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // --- REPLACED: finishAssessment function ---
     function finishAssessment() {
         if (!modelData) {
             alert("Model is still loading, please wait a moment and try again.");
             return;
         }
-
-        // 1. One-Hot Encode the user's answers
         const inputVector = modelData.columns.map(col => {
             const [q_id, option] = col.split('_');
             const userAnswer = userAnswers[questionKeys.indexOf(q_id)];
             return userAnswer === option ? 1 : 0;
         });
-
-        // 2. Predict using the local model
         const predictionResult = predictWithLocalModel(inputVector);
-        
-        // 3. Show the results
+        saveResultToFirestore(predictionResult);
         showResults(predictionResult);
     }
 
-    // --- NEW: Local prediction logic ---
+    function saveResultToFirestore(result) {
+        const user = auth.currentUser;
+        if (!user) {
+            console.log("No user logged in, skipping save.");
+            return;
+        }
+        db.collection("users").doc(user.uid).collection("assessments").add({
+            prediction: result.prediction,
+            probabilities: result.probabilities,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => console.log("Result saved to Firestore successfully!"))
+        .catch(error => console.error("Error saving result to Firestore: ", error));
+    }
+
+    async function showProfilePage() {
+        showPage('profile-page');
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const historyContainer = document.getElementById('history-container');
+        historyContainer.innerHTML = "<p>Loading your history...</p>";
+
+        try {
+            const querySnapshot = await db.collection("users").doc(user.uid).collection("assessments")
+                .orderBy("timestamp", "desc")
+                .get();
+            
+            if (querySnapshot.empty) {
+                historyContainer.innerHTML = "<p>You haven't completed any assessments yet.</p>";
+                return;
+            }
+
+            historyContainer.innerHTML = "";
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const resultCard = document.createElement('div');
+                resultCard.className = 'history-card';
+                const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }) : 'Date not available';
+                
+                let probsHTML = '';
+                const sortedProbs = Object.entries(data.probabilities).sort((a,b) => b[1] - a[1]);
+                sortedProbs.forEach(([stream, prob]) => {
+                    probsHTML += `<p>${stream}: <span>${(prob * 100).toFixed(1)}%</span></p>`;
+                });
+                resultCard.innerHTML = `
+                    <div class="history-header">
+                        <h3>${data.prediction}</h3>
+                        <p class="history-date">Taken on ${date}</p>
+                    </div>
+                    <div class="history-body">
+                        ${probsHTML}
+                    </div>
+                `;
+                historyContainer.appendChild(resultCard);
+            });
+        } catch (error) {
+            console.error("Error fetching history: ", error);
+            historyContainer.innerHTML = "<p>Could not load your history. Please try again later.</p>";
+        }
+    }    
+
     function predictWithLocalModel(inputVector) {
         const treePredictions = [];
-        
         for (const tree of modelData.trees) {
             let currentNodeIndex = 0;
             while (tree.children_left[currentNodeIndex] !== -1) {
@@ -290,38 +342,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalPrediction = modelData.classes[i];
             }
         }
-
-        return {
-            prediction: finalPrediction,
-            probabilities: probabilities
-        };
+        return { prediction: finalPrediction, probabilities: probabilities };
     }
 
-    // --- NEW: Function to display results in the modal ---
     function showResults(data) {
         resultStream.textContent = data.prediction;
-        resultProbs.innerHTML = ''; // Clear previous probabilities
-
-        // Create a nice display for the probabilities
+        resultProbs.innerHTML = '';
         const sortedProbs = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
-
         for (const [stream, prob] of sortedProbs) {
             const probPercent = (prob * 100).toFixed(2);
             const probEl = document.createElement('p');
             probEl.innerHTML = `<strong>${stream}:</strong> ${probPercent}% likely`;
             resultProbs.appendChild(probEl);
         }
-
         resultModal.classList.add('visible');
-
         closeResultBtn.onclick = () => {
             resultModal.classList.remove('visible');
-            homePage.classList.remove('hidden');
-            assessmentPage.classList.add('hidden');
+            showPage('home-page');
         };
     }
 
-
+    // --- NAVIGATION & BUTTON EVENT LISTENERS ---
     if (startJourneyBtn) startJourneyBtn.addEventListener('click', startAssessment);
     if (navTakeSurvey) navTakeSurvey.addEventListener('click', (e) => {
         e.preventDefault();
@@ -329,119 +370,121 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (nextBtn) nextBtn.addEventListener('click', goToNextQuestion);
     if (prevBtn) prevBtn.addEventListener('click', goToPrevQuestion);
-    if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => {
-        homePage.classList.remove('hidden');
-        assessmentPage.classList.add('hidden');
+    if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => showPage('home-page'));
+    
+    const navProfile = document.getElementById('nav-profile');
+    if (navProfile) navProfile.addEventListener('click', (e) => {
+        e.preventDefault();
+        showProfilePage();
     });
+    
+    const navHome = document.getElementById('nav-home');
+    if (navHome) navHome.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage('home-page');
+    });
+    
+    if (profileBackToHomeBtn) {
+        profileBackToHomeBtn.addEventListener('click', () => showPage('home-page'));
+    }
+
+    // --- CHATBOT CODE ---
+    const chatbotIcon = document.getElementById('chatbotIcon');
+    const chatbotContainer = document.getElementById('chatbotContainer');
+    if (chatbotIcon && chatbotContainer) {
+        chatbotIcon.addEventListener('click', () => {
+            chatbotContainer.classList.remove('hide');
+            chatbotIcon.classList.add('hide');
+            setTimeout(() => {
+                document.getElementById('user-input').focus();
+            }, 300);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !chatbotContainer.classList.contains('hide')) {
+                chatbotContainer.classList.add('hide');
+                chatbotIcon.classList.remove('hide');
+            }
+        });
+
+        const chatHeader = document.querySelector('.chat-header');
+        if (chatHeader) {
+            const closeBtn = document.createElement('span');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = `position: absolute; right: 18px; top: 18px; font-size: 22px; color: #fff; cursor: pointer; font-weight: bold; z-index: 2; user-select: none;`;
+            closeBtn.title = "Close Chat";
+            chatHeader.style.position = "relative";
+            chatHeader.appendChild(closeBtn);
+            closeBtn.addEventListener('click', () => {
+                chatbotContainer.classList.add('hide');
+                chatbotIcon.classList.remove('hide');
+            });
+        }
+    }
+
+    function formatMarkdown(text) {
+        if (!text) return '';
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        text = text.replace(/\n/g, '<br>');
+        return text;
+    }
+
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+        if (!inputField || !chatBox) return;
+        const userMessage = inputField.value.trim();
+        if (userMessage === '') return;
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user';
+        userDiv.textContent = userMessage;
+        chatBox.appendChild(userDiv);
+        inputField.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const botDiv = document.createElement('div');
+        botDiv.className = 'message bot';
+        botDiv.textContent = 'Thinking...';
+        chatBox.appendChild(botDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'gemma3:4b',
+                    prompt: userMessage,
+                    stream: false
+                })
+            });
+            const data = await response.json();
+            botDiv.innerHTML = formatMarkdown(data.response) || 'No response from AI.';
+        } catch (error) {
+            botDiv.textContent = 'Error connecting to Gemma model.';
+            console.error(error);
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    const userInput = document.getElementById('user-input');
+    if (userInput) {
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    // FIX: The button in your HTML has an onclick attribute which we should not use.
+    // Instead, we give it an ID and add a listener here.
+    const sendBtn = document.querySelector('.input-container button'); // A more robust selector
+    if(sendBtn) {
+        sendBtn.addEventListener('click', sendMessage);
+    }
 });
-
-  //Code for Chatbot 
-  // Toggle chat window open/close
-  const chatbotIcon = document.getElementById('chatbotIcon');
-  const chatbotContainer = document.getElementById('chatbotContainer');
-
-  chatbotIcon.addEventListener('click', () => {
-    chatbotContainer.classList.remove('hide');
-    chatbotIcon.classList.add('hide');
-    setTimeout(() => {
-      document.getElementById('user-input').focus();
-    }, 300);
-  });
-
-  // Optional: close chat when clicking outside or pressing Escape
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !chatbotContainer.classList.contains('hide')) {
-      chatbotContainer.classList.add('hide');
-      chatbotIcon.classList.remove('hide');
-    }
-  });
-
-  // Add a close button to chat header
-  const chatHeader = document.querySelector('.chat-header');
-  const closeBtn = document.createElement('span');
-  closeBtn.innerHTML = '&times;';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 18px;
-    top: 18px;
-    font-size: 22px;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 2;
-    user-select: none;
-  `;
-  closeBtn.title = "Close Chat";
-  chatHeader.style.position = "relative";
-  chatHeader.appendChild(closeBtn);
-
-  closeBtn.addEventListener('click', () => {
-    chatbotContainer.classList.add('hide');
-    chatbotIcon.classList.remove('hide');
-  });
-
-  function formatMarkdown(text) {
-    // Basic Markdown to HTML conversion
-    if (!text) return '';
-    // Bold **text**
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Italic *text*
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    // Inline code `code`
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-    // Links [text](url)
-    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-    // Line breaks
-    text = text.replace(/\n/g, '<br>');
-    return text;
-  }
-
-  async function sendMessage() {
-    const inputField = document.getElementById('user-input');
-    const chatBox = document.getElementById('chat-box');
-    const userMessage = inputField.value.trim();
-
-    if (userMessage === '') return;
-
-    // Show user's message
-    const userDiv = document.createElement('div');
-    userDiv.className = 'message user';
-    userDiv.textContent = userMessage;
-    chatBox.appendChild(userDiv);
-
-    inputField.value = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Show "Thinking..." placeholder
-    const botDiv = document.createElement('div');
-    botDiv.className = 'message bot';
-    botDiv.textContent = 'Thinking...';
-    chatBox.appendChild(botDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    try {
-      // Fetch response from Ollama local API
-      const response = await fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'gemma3:4b',
-          prompt: userMessage,
-          stream: false
-        })
-      });
-
-      const data = await response.json();
-      botDiv.innerHTML = formatMarkdown(data.response) || 'No response from AI.';
-    } catch (error) {
-      botDiv.textContent = 'Error connecting to Gemma model.';
-      console.error(error);
-    }
-
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  // Allow pressing Enter to send message
-  document.getElementById('user-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') sendMessage();
-  });
