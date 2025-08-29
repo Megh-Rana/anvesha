@@ -40,6 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'none';
     nav.appendChild(logoutBtn);
 
+    const dynamicBg = document.getElementById('dynamic-bg');
+    if (dynamicBg) {
+        document.body.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            dynamicBg.style.setProperty('--mouse-x', `${clientX}px`);
+            dynamicBg.style.setProperty('--mouse-y', `${clientY}px`);
+        });
+    }
+
     let isRegisterMode = false;
 
     // --- LOGIN/REGISTER LOGIC ---
