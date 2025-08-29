@@ -578,3 +578,28 @@ main {
     pointer-events: none;
     transition: opacity 0.3s;
 }
+
+/* Welcome Message Styling */
+.nav-welcome {
+    color: var(--dark-text);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    margin-right: -0.5rem; /* Adjust spacing between text and icon */
+}
+
+/* Profile Icon Styling */
+#nav-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#nav-profile svg {
+    stroke: var(--light-text);
+    transition: stroke 0.3s ease;
+}
+
+#nav-profile:hover svg {
+    stroke: var(--primary-color);
+}

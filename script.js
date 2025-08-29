@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleToLogin = document.getElementById('toggle-to-login');
     const registerLink = document.getElementById('register-link');
     const loginLink = document.getElementById('login-link');
+    const welcomeMessage = document.getElementById('welcome-message');
 
     const nav = document.querySelector('nav');
     const logoutBtn = document.createElement('a');
@@ -80,16 +81,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     auth.onAuthStateChanged(user => {
+        const loginNavLinks = document.querySelectorAll('.nav-link:not(#nav-profile)');
+
         if (user) {
-            loginModal.classList.remove('visible');
-            homePage.classList.remove('hidden');
-            logoutBtn.style.display = 'inline-block';
+            // User is signed in
+            if (loginModal) loginModal.classList.remove('visible');
+            if (homePage) homePage.classList.remove('hidden');
+            if (logoutBtn) logoutBtn.style.display = 'inline-block';
+
+            // Show welcome message and profile icon
+            if (welcomeMessage) {
+                welcomeMessage.textContent = `Welcome, ${user.email}`;
+                welcomeMessage.classList.remove('hidden');
+            }
+            if (navProfile) {
+                navProfile.classList.remove('hidden');
+            }
+             // Hide generic login link
+            loginNavLinks.forEach(link => {
+                if(link.textContent === 'Login') link.classList.add('hidden');
+            });
+
         } else {
-            homePage.classList.add('hidden');
-            assessmentPage.classList.add('hidden');
-            profilePage.classList.add('hidden');
-            loginModal.classList.add('visible');
-            logoutBtn.style.display = 'none';
+            // User is signed out
+            if (homePage) homePage.classList.add('hidden');
+            if (assessmentPage) assessmentPage.classList.add('hidden');
+            if (profilePage) profilePage.classList.add('hidden');
+            if (loginModal) loginModal.classList.add('visible');
+            if (logoutBtn) logoutBtn.style.display = 'none';
+
+            // Hide welcome message and profile icon
+            if (welcomeMessage) {
+                welcomeMessage.classList.add('hidden');
+            }
+            if (navProfile) {
+                navProfile.classList.add('hidden');
+            }
+            // Show generic login link
+            loginNavLinks.forEach(link => {
+                if(link.textContent === 'Login') link.classList.remove('hidden');
+            });
         }
     });
 
