@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Add data-theme attribute for JS to hook into -->
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -28,108 +27,113 @@
         </div>
     </div>
 </div>
-    <div id="home-page">
-        <header>
-            <div class="logo">
-                <img src="logo.png" alt="Anvesha Logo">
-                <span>Anvesha</span>
+<div id="home-page">
+    <header>
+        <div class="logo">
+            <img src="logo.png" alt="Anvesha Logo">
+            <span>Anvesha</span>
+        </div>
+        <nav>
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#" class="nav-link" id="nav-take-survey">Take Survey</a>
+            <span id="welcome-message" class="nav-welcome hidden"></span>
+            <a href="#" class="nav-link" id="nav-profile">My Profile</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <p class="trusted-by">Extensive Dataset of 250+ Students</p>
+            <h1>Discover Your <span class="highlight-green">Perfect Career</span> Path with AI</h1>
+            <p class="sub-heading">Let Anvesha guide you through the maze of career choices. Get personalized recommendations for streams based on your unique profile.</p>
+            <div class="cta-buttons">
+                <button class="btn btn-primary" id="start-journey-btn">Start Your Journey →</button>
             </div>
-            <nav>
-                <a href="#" class="nav-link active">Home</a>
-                <a href="#" class="nav-link" id="nav-take-survey">Take Survey</a>
-                <span id="welcome-message" class="nav-welcome hidden"></span>
-                <a href="#" class="nav-link" id="nav-profile">My Profile</a>
-                <!-- START: Added Theme Toggle Button -->
-                <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme">
-                    <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                    <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                </button>
-                <!-- END: Added Theme Toggle Button -->
-            </nav>
-        </header>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card">
+                <div class="icon-bg">
+                    <!-- Brain SVG instead of bulb -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 0a4 4 0 0 0-4 4v1H2v2h2v1H2v2h2v1a4 4 0 0 0 4 4 4 4 0 0 0 4-4v-1h2v-2h-2v-1h2v-2h-2V4a4 4 0 0 0-4-4z"/>
+                    </svg>
+                </div>
+                <h3>AI-Powered Guidance</h3>
+                <p>Get personalized career recommendations based on your interests and strengths.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-bg">
+                    <!-- Rocket SVG instead of target -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.146 1.854a.5.5 0 0 1 .708 0l1.292 1.292a.5.5 0 0 1 0 .708l-8 8a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l8-8zM11.207 3L4 10.207V11h.793L13 4.793 11.207 3z"/>
+                        <path fill-rule="evenodd" d="M1 13.5a.5.5 0 0 1 .5-.5h2.793a.5.5 0 0 1 0 1H1.5a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </div>
+                <h3>Perfect Stream Match</h3>
+                <p>Find the ideal academic stream that aligns with your goals and abilities.</p>
+            </div>
+        </section>
 
-        <main>
-            <section class="hero">
-                <p class="trusted-by">Extensive Dataset of 250+ Students</p>
-                <h1>Discover Your <span class="highlight-green">Perfect Career</span> Path with AI</h1>
-                <p class="sub-heading">Let Anvesha guide you through the maze of career choices. Get personalized recommendations for streams based on your unique profile.</p>
-                <div class="cta-buttons">
-                    <button class="btn btn-primary" id="start-journey-btn">Start Your Journey →</button>
-                </div>
-            </section>
-            
-            <section class="features">
-                 <div class="feature-card">
-                    <div class="icon-bg">💡</div>
-                    <h3>AI-Powered Guidance</h3>
-                    <p>Get personalized career recommendations based on your interests and strengths.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon-bg">🎯</div>
-                    <h3>Perfect Stream Match</h3>
-                    <p>Find the ideal academic stream that aligns with your goals and abilities.</p>
-                </div>
-            </section>
+        <section class="stats">
+            <div class="stat-item">
+                <h2>250+</h2>
+                <p>Students Dataset</p>
+            </div>
+            <div class="stat-item">
+                <h2>95%</h2>
+                <p>Success Rate</p>
+            </div>
+            <div class="stat-item">
+                <h2>24/7</h2>
+                <p>AI Support</p>
+            </div>
+        </section>
+    </main>
+</div>
 
-            <section class="stats">
-                <div class="stat-item">
-                    <h2>250+</h2>
-                    <p>Students Dataset</p>
-                </div>
-                <div class="stat-item">
-                    <h2>95%</h2>
-                    <p>Success Rate</p>
-                </div>
-                 <div class="stat-item">
-                    <h2>24/7</h2>
-                    <p>AI Support</p>
-                </div>
-            </section>
-        </main>
+<div id="assessment-page" class="hidden">
+    <div class="assessment-container">
+        <p class="progress-text" id="progress-text">Question 1 of 21</p>
+        <div class="assessment-card">
+            <div class="card-content">
+                <h2 id="question-text">A big project you lead fails. What do you do first?</h2>
+                <div class="options-container" id="options-container"></div>
+            </div>
+        </div>
+        <div class="navigation-buttons">
+            <button class="btn btn-secondary" id="prev-btn">← Previous</button>
+            <button class="btn btn-primary" id="next-btn">Next →</button>
+        </div>
+        <button class="btn-back-home" id="back-to-home-btn">← Back to Home</button>
     </div>
 
-    <div id="assessment-page" class="hidden">
-        <div class="assessment-container">
-            <p class="progress-text" id="progress-text">Question 1 of 21</p>
-            <div class="assessment-card">
-                <div class="card-content">
-                    <h2 id="question-text">A big project you lead fails. What do you do first?</h2>
-                    <div class="options-container" id="options-container">
-                        </div>
-                </div>
-            </div>
-            <div class="navigation-buttons">
-                <button class="btn btn-secondary" id="prev-btn">← Previous</button>
-                <button class="btn btn-primary" id="next-btn">Next →</button>
-            </div>
-             <button class="btn-back-home" id="back-to-home-btn">← Back to Home</button>
-        </div>
-
-        <div id="result-modal" class="modal-overlay">
-            <div class="modal-content">
-                <h2>Your Recommended Stream</h2>
-                <p>Based on your profile, we recommend:</p>
-                <h1 id="result-stream" class="highlight-green" style="font-size: 2.5rem; margin: 1rem 0;"></h1>
-                <div id="result-probabilities"></div>
-                <button id="close-result-modal" class="btn btn-primary" style="margin-top: 1rem;">Finish</button>
-            </div>
+    <div id="result-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Your Recommended Stream</h2>
+            <p>Based on your profile, we recommend:</p>
+            <h1 id="result-stream" class="highlight-green" style="font-size: 2.5rem; margin: 1rem 0;"></h1>
+            <div id="result-probabilities"></div>
+            <button id="close-result-modal" class="btn btn-primary" style="margin-top: 1rem;">Finish</button>
         </div>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+</div>
 
-    <div id="profile-page" class="hidden">
-        <div class="profile-container">
-            <h1>My Assessment History</h1>
-            <p>Here are the results from your previous assessments.</p>
-            <div id="history-container" class="history-container">
-                <!-- History will be loaded here -->
-                <p>Loading your history...</p>
-            </div>
-            <button class="btn-back-home" id="profile-back-to-home-btn">← Back to Home</button>
+<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+
+<div id="profile-page" class="hidden">
+    <div class="profile-container">
+        <h1>My Assessment History</h1>
+        <p>Here are the results from your previous assessments.</p>
+        <div id="history-container" class="history-container">
+            <p>Loading your history...</p>
         </div>
-    </div>    
-    <script src="script.js"></script>
+        <button class="btn-back-home" id="profile-back-to-home-btn">← Back to Home</button>
+    </div>
+</div>    
+
+<script src="script.js"></script>
 </body>
 </html>
