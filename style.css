@@ -696,4 +696,20 @@ html[data-theme='dark'] #login-form input::placeholder {
     width: 22px;
     height: 22px;
 }
+.icon-bg {
+    width: 60px;      /* adjust as needed */
+    height: 60px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.2;     /* translucent */
+}
+
+.bulb-bg {
+    background-image: url('bulb.svg'); /* path to your bulb logo */
+}
+
+.target-bg {
+    background-image: url('target.svg'); /* path to your target logo */
+}
 
