@@ -708,6 +708,6 @@ html[data-theme='dark'] #login-form input::placeholder {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    opacity: 0.3; /* translucent effect */
+    opacity: 0.75; /* translucent effect */
 }
 
