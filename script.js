@@ -528,3 +528,65 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBtn.addEventListener('click', sendMessage);
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Dark/Light Mode Toggle Logic ---
+    
+    // Get the button and icons from the DOM
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIconLight = document.getElementById('theme-icon-light');
+    const themeIconDark = document.getElementById('theme-icon-dark');
+    const doc = document.documentElement; // The <html> element
+
+    // This function applies the theme to the UI
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            doc.setAttribute('data-theme', 'dark');
+            // Show the moon icon and hide the sun
+            if (themeIconLight && themeIconDark) {
+                themeIconLight.classList.add('hidden');
+                themeIconDark.classList.remove('hidden');
+            }
+        } else {
+            doc.setAttribute('data-theme', 'light');
+            // Show the sun icon and hide the moon
+            if (themeIconLight && themeIconDark) {
+                themeIconLight.classList.remove('hidden');
+                themeIconDark.classList.add('hidden');
+            }
+        }
+    };
+    
+    // This function sets the theme and saves it to localStorage
+    const setThemeAndSave = (theme) => {
+        applyTheme(theme);
+        localStorage.setItem('theme', theme);
+    };
+
+    // Add a click event listener to the toggle button
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            // Check what the current theme is and toggle it
+            const currentTheme = doc.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setThemeAndSave(newTheme);
+        });
+    }
+
+    // --- Initial Theme Check on Page Load ---
+    // Check for a theme saved in localStorage first
+    const savedTheme = localStorage.getItem('theme');
+    // If no saved theme, check the user's OS preference
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme) {
+        // If a theme is saved, use it
+        applyTheme(savedTheme);
+    } else if (prefersDark) {
+        // If the user's OS prefers dark mode, use it
+        applyTheme('dark');
+    } else {
+        // Otherwise, default to light mode
+        applyTheme('light'); 
+    }
+});

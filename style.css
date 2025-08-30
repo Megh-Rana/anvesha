@@ -9,6 +9,16 @@
     --border-color: #EAEAEA;
 }
 
+html[data-theme='dark'] {
+    --primary-color: #58a6ff; /* Lighter blue for dark mode */
+    --secondary-color: #50E3C2; /* Keep it vibrant */
+    --dark-text: #e0e0e0; /* Light gray for main text */
+    --light-text: #a0a0a0; /* Lighter gray for secondary text */
+    --bg-color: #121212; /* Very dark gray */
+    --card-bg: #1e1e1e; /* Slightly lighter dark gray for cards */
+    --border-color: #333333; /* Dark border */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -305,7 +315,7 @@ main {
 }
 
 .modal-content {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem 2.5rem;
     border-radius: 12px;
     width: 90%;
@@ -617,4 +627,28 @@ main {
         transparent 80%
     );
     transition: background 0.1s ease-out; /* Smooths the movement slightly */
+}
+
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 1rem; /* Added margin for spacing */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--light-text);
+    transition: color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    color: var(--primary-color);
+}
+
+.theme-toggle-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor; /* Make SVG color inherit from parent */
+    transition: color 0.3s ease;
 }
