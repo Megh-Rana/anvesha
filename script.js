@@ -17,11 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- PAGE & MODAL ELEMENTS ---
+    // --- ELEMENT SELECTORS ---
+    // Pages & Modals
     const homePage = document.getElementById('home-page');
     const assessmentPage = document.getElementById('assessment-page');
     const profilePage = document.getElementById('profile-page');
     const loginModal = document.getElementById('login-modal');
+    const resultModal = document.getElementById('result-modal');
+
+    // Forms & Auth
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
     const formTitle = document.getElementById('form-title');
@@ -30,28 +34,109 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleToLogin = document.getElementById('toggle-to-login');
     const registerLink = document.getElementById('register-link');
     const loginLink = document.getElementById('login-link');
-    const welcomeMessage = document.getElementById('welcome-message');
-
+    
+    // Navigation & Welcome
     const nav = document.querySelector('nav');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const navTakeSurvey = document.getElementById('nav-take-survey');
+    const navProfile = document.getElementById('nav-profile');
+    const navHome = document.getElementById('nav-home');
+
+    // Assessment
+    const startJourneyBtn = document.getElementById('start-journey-btn');
+    const assessmentCard = document.querySelector('.assessment-card');
+    const progressText = document.getElementById('progress-text');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const backToHomeBtn = document.getElementById('back-to-home-btn');
+    const resultStream = document.getElementById('result-stream');
+    const resultProbs = document.getElementById('result-probabilities');
+    const closeResultBtn = document.getElementById('close-result-modal');
+    const profileBackToHomeBtn = document.getElementById('profile-back-to-home-btn');
+
+    // Theme Toggle
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIconLight = document.getElementById('theme-icon-light');
+    const themeIconDark = document.getElementById('theme-icon-dark');
+    const doc = document.documentElement; // The <html> element
+
+
+    // --- THEME TOGGLE & DYNAMIC BACKGROUND ---
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            doc.setAttribute('data-theme', 'dark');
+            if (themeIconLight && themeIconDark) {
+                themeIconLight.classList.add('hidden');
+                themeIconDark.classList.remove('hidden');
+            }
+            // Set dynamic background properties for dark mode
+            doc.style.setProperty('--dynamic-bg-color', 'rgba(88, 166, 255, 0.05)');
+            doc.style.setProperty('--dynamic-bg-size', '450px'); // Reduced from 800px for a smaller circle
+        } else {
+            doc.setAttribute('data-theme', 'light');
+            if (themeIconLight && themeIconDark) {
+                themeIconLight.classList.remove('hidden');
+                themeIconDark.classList.add('hidden');
+            }
+            // Set dynamic background properties for light mode
+            doc.style.setProperty('--dynamic-bg-color', 'rgba(74, 144, 226, 0.1)');
+            doc.style.setProperty('--dynamic-bg-size', '600px');
+        }
+    };
+
+
+    const setThemeAndSave = (theme) => {
+        applyTheme(theme);
+        localStorage.setItem('theme', theme);
+    };
+    
+    // Initial Theme Check on Page Load
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme) {
+        applyTheme(savedTheme);
+    } else if (prefersDark) {
+        applyTheme('dark');
+    } else {
+        applyTheme('light');
+    }
+
+    // Theme Toggle Button Event
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = doc.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setThemeAndSave(newTheme);
+        });
+    }
+
+    // Dynamic Background Mouse Tracking
+    document.addEventListener('mousemove', e => {
+        window.requestAnimationFrame(() => {
+            doc.style.setProperty('--mouse-x', e.clientX + 'px');
+            doc.style.setProperty('--mouse-y', e.clientY + 'px');
+        });
+    });
+
+    // --- LOGIN/REGISTER LOGIC ---
+    let isRegisterMode = false;
+    
+    // Create and append logout button dynamically
     const logoutBtn = document.createElement('a');
     logoutBtn.href = '#';
     logoutBtn.textContent = 'Logout';
     logoutBtn.classList.add('nav-link');
     logoutBtn.style.display = 'none';
-    nav.appendChild(logoutBtn);
-
-    const dynamicBg = document.getElementById('dynamic-bg');
-    if (dynamicBg) {
-        document.body.addEventListener('mousemove', (e) => {
-            const { clientX, clientY } = e;
-            dynamicBg.style.setProperty('--mouse-x', `${clientX}px`);
-            dynamicBg.style.setProperty('--mouse-y', `${clientY}px`);
-        });
+    if(themeToggleBtn) {
+        // Insert logout button before the theme toggle
+        nav.insertBefore(logoutBtn, themeToggleBtn);
+    } else {
+        nav.appendChild(logoutBtn);
     }
 
-    let isRegisterMode = false;
-
-    // --- LOGIN/REGISTER LOGIC ---
     if(registerLink) registerLink.addEventListener('click', () => {
         isRegisterMode = true;
         formTitle.textContent = 'Register';
@@ -93,12 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginNavLinks = document.querySelectorAll('.nav-link:not(#nav-profile)');
 
         if (user) {
-            // User is signed in
             if (loginModal) loginModal.classList.remove('visible');
             if (homePage) homePage.classList.remove('hidden');
             if (logoutBtn) logoutBtn.style.display = 'inline-block';
-
-            // Show welcome message and profile icon
             if (welcomeMessage) {
                 welcomeMessage.textContent = `Welcome, ${user.email}`;
                 welcomeMessage.classList.remove('hidden');
@@ -106,27 +188,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (navProfile) {
                 navProfile.classList.remove('hidden');
             }
-             // Hide generic login link
-            loginNavLinks.forEach(link => {
+             loginNavLinks.forEach(link => {
                 if(link.textContent === 'Login') link.classList.add('hidden');
             });
-
         } else {
-            // User is signed out
             if (homePage) homePage.classList.add('hidden');
             if (assessmentPage) assessmentPage.classList.add('hidden');
             if (profilePage) profilePage.classList.add('hidden');
             if (loginModal) loginModal.classList.add('visible');
             if (logoutBtn) logoutBtn.style.display = 'none';
-
-            // Hide welcome message and profile icon
             if (welcomeMessage) {
                 welcomeMessage.classList.add('hidden');
             }
             if (navProfile) {
                 navProfile.classList.add('hidden');
             }
-            // Show generic login link
             loginNavLinks.forEach(link => {
                 if(link.textContent === 'Login') link.classList.remove('hidden');
             });
@@ -139,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- ASSESSMENT & MODEL LOGIC ---
+    // (Your existing assessment, model, and chatbot code remains the same from here)
     const questions = {
         'Q1': {"text": "A big project you lead fails. What do you do first?", "options": {"1": "Find out exactly what went wrong using facts and data.", "2": "Change the plan quickly and save what you can.", "3": "Talk to the team and check how they are feeling."}},
         'Q2': {"text": "Which documentary would you like to watch more?", "options": {"1": "One that explains the truth about a science topic using experts and facts.", "2": "One about the life of a famous person, showing their story and feelings.", "3": "One about how businesses or innovations grew, showing their journey and strategies."}},
@@ -166,21 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalQuestions = questionKeys.length;
     let currentQuestionIndex = 0;
     let userAnswers = new Array(totalQuestions).fill(null);
-
-    const startJourneyBtn = document.getElementById('start-journey-btn');
-    const navTakeSurvey = document.getElementById('nav-take-survey');
-    const assessmentCard = document.querySelector('.assessment-card');
-    const progressText = document.getElementById('progress-text');
-    const questionText = document.getElementById('question-text');
-    const optionsContainer = document.getElementById('options-container');
-    const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
-    const backToHomeBtn = document.getElementById('back-to-home-btn');
-    const resultModal = document.getElementById('result-modal');
-    const resultStream = document.getElementById('result-stream');
-    const resultProbs = document.getElementById('result-probabilities');
-    const closeResultBtn = document.getElementById('close-result-modal');
-    const profileBackToHomeBtn = document.getElementById('profile-back-to-home-btn');
 
     let modelData = null;
     fetch('model.json')
@@ -411,19 +473,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextBtn) nextBtn.addEventListener('click', goToNextQuestion);
     if (prevBtn) prevBtn.addEventListener('click', goToPrevQuestion);
     if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => showPage('home-page'));
-    
-    const navProfile = document.getElementById('nav-profile');
     if (navProfile) navProfile.addEventListener('click', (e) => {
         e.preventDefault();
         showProfilePage();
     });
-    
-    const navHome = document.getElementById('nav-home');
     if (navHome) navHome.addEventListener('click', (e) => {
         e.preventDefault();
         showPage('home-page');
     });
-    
     if (profileBackToHomeBtn) {
         profileBackToHomeBtn.addEventListener('click', () => showPage('home-page'));
     }
@@ -521,72 +578,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // FIX: The button in your HTML has an onclick attribute which we should not use.
-    // Instead, we give it an ID and add a listener here.
-    const sendBtn = document.querySelector('.input-container button'); // A more robust selector
+    const sendBtn = document.querySelector('.input-container button');
     if(sendBtn) {
         sendBtn.addEventListener('click', sendMessage);
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Dark/Light Mode Toggle Logic ---
-    
-    // Get the button and icons from the DOM
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeIconLight = document.getElementById('theme-icon-light');
-    const themeIconDark = document.getElementById('theme-icon-dark');
-    const doc = document.documentElement; // The <html> element
-
-    // This function applies the theme to the UI
-    const applyTheme = (theme) => {
-        if (theme === 'dark') {
-            doc.setAttribute('data-theme', 'dark');
-            // Show the moon icon and hide the sun
-            if (themeIconLight && themeIconDark) {
-                themeIconLight.classList.add('hidden');
-                themeIconDark.classList.remove('hidden');
-            }
-        } else {
-            doc.setAttribute('data-theme', 'light');
-            // Show the sun icon and hide the moon
-            if (themeIconLight && themeIconDark) {
-                themeIconLight.classList.remove('hidden');
-                themeIconDark.classList.add('hidden');
-            }
-        }
-    };
-    
-    // This function sets the theme and saves it to localStorage
-    const setThemeAndSave = (theme) => {
-        applyTheme(theme);
-        localStorage.setItem('theme', theme);
-    };
-
-    // Add a click event listener to the toggle button
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            // Check what the current theme is and toggle it
-            const currentTheme = doc.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setThemeAndSave(newTheme);
-        });
-    }
-
-    // --- Initial Theme Check on Page Load ---
-    // Check for a theme saved in localStorage first
-    const savedTheme = localStorage.getItem('theme');
-    // If no saved theme, check the user's OS preference
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (savedTheme) {
-        // If a theme is saved, use it
-        applyTheme(savedTheme);
-    } else if (prefersDark) {
-        // If the user's OS prefers dark mode, use it
-        applyTheme('dark');
-    } else {
-        // Otherwise, default to light mode
-        applyTheme('light'); 
-    }
-});
