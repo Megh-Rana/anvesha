@@ -17,6 +17,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+
+    // --- GOOGLE SIGN-IN ---
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+const googleLoginBtn = document.getElementById('google-login-btn');
+
+if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', () => {
+        auth.signInWithPopup(googleProvider)
+            .then((result) => {
+                const user = result.user;
+                console.log("Google Sign-In successful:", user.displayName, user.email);
+
+                // ✅ Optional: Save user to Firestore if not already there
+                db.collection('users').doc(user.uid).set({
+                    name: user.displayName,
+                    email: user.email,
+                    photo: user.photoURL
+                }, { merge: true });
+
+                // ✅ Redirect or close modal after login
+                if (loginModal) loginModal.classList.remove('visible');
+                if (homePage) homePage.classList.remove('hidden');
+
+            })
+            .catch((error) => {
+                console.error("Error during Google sign-in:", error.message);
+                loginError.textContent = error.message;
+            });
+    });
+}
     // --- ELEMENT SELECTORS ---
     // Pages & Modals
     const homePage = document.getElementById('home-page');
