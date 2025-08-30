@@ -697,19 +697,17 @@ html[data-theme='dark'] #login-form input::placeholder {
     height: 22px;
 }
 .icon-bg {
-    width: 60px;      /* adjust as needed */
+    width: 60px;
     height: 60px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0.2;     /* translucent */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.bulb-bg {
-    background-image: url('bulb.svg'); /* path to your bulb logo */
-}
-
-.target-bg {
-    background-image: url('target.svg'); /* path to your target logo */
+.icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.3; /* translucent effect */
 }
 
