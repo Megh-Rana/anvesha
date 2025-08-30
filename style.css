@@ -697,19 +697,32 @@ html[data-theme='dark'] #login-form input::placeholder {
     height: 22px;
 }
 .icon-bg {
-    width: 60px;      /* adjust as needed */
+    width: 60px;
     height: 60px;
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.2;     /* translucent */
+    /* make only the background translucent */
+    position: relative;
 }
 
-.bulb-bg {
-    background-image: url('bulb.svg'); /* path to your bulb logo */
+.bulb-bg::before,
+.target-bg::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.2; /* translucent */
 }
 
-.target-bg {
-    background-image: url('target.svg'); /* path to your target logo */
+.bulb-bg::before {
+    background-image: url('bulb.svg');
 }
+
+.target-bg::before {
+    background-image: url('target.svg');
+}
+
 
