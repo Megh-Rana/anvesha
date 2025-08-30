@@ -143,6 +143,118 @@ if (googleLoginBtn) {
         });
     }
 
+
+
+    // Toggle chat window open/close
+  const chatbotIcon = document.getElementById('chatbotIcon');
+  const chatbotContainer = document.getElementById('chatbotContainer');
+
+  chatbotIcon.addEventListener('click', () => {
+    chatbotContainer.classList.remove('hide');
+    chatbotIcon.classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('user-input').focus();
+    }, 300);
+  });
+
+  // Optional: close chat when clicking outside or pressing Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !chatbotContainer.classList.contains('hide')) {
+      chatbotContainer.classList.add('hide');
+      chatbotIcon.classList.remove('hide');
+    }
+  });
+
+  // Add a close button to chat header
+  const chatHeader = document.querySelector('.chat-header');
+  const closeBtn = document.createElement('span');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    font-size: 22px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 2;
+    user-select: none;
+  `;
+  closeBtn.title = "Close Chat";
+  chatHeader.style.position = "relative";
+  chatHeader.appendChild(closeBtn);
+
+  closeBtn.addEventListener('click', () => {
+    chatbotContainer.classList.add('hide');
+    chatbotIcon.classList.remove('hide');
+  });
+
+  function formatMarkdown(text) {
+    // Basic Markdown to HTML conversion
+    if (!text) return '';
+    // Bold **text**
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic *text*
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Inline code `code`
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Links [text](url)
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // Line breaks
+    text = text.replace(/\n/g, '<br>');
+    return text;
+  }
+
+  async function sendMessage() {
+    const inputField = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
+    const userMessage = inputField.value.trim();
+
+    if (userMessage === '') return;
+
+    // Show user's message
+    const userDiv = document.createElement('div');
+    userDiv.className = 'message user';
+    userDiv.textContent = userMessage;
+    chatBox.appendChild(userDiv);
+
+    inputField.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Show "Thinking..." placeholder
+    const botDiv = document.createElement('div');
+    botDiv.className = 'message bot';
+    botDiv.textContent = 'Thinking...';
+    chatBox.appendChild(botDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+      // Fetch response from Ollama local API
+      const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gemma3:4b',
+          prompt: userMessage,
+          stream: false
+        })
+      });
+
+      const data = await response.json();
+      botDiv.innerHTML = formatMarkdown(data.response) || 'No response from AI.';
+    } catch (error) {
+      botDiv.textContent = 'Error connecting to Gemma model.';
+      console.error(error);
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // Allow pressing Enter to send message
+  document.getElementById('user-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
     // Dynamic Background Mouse Tracking
     document.addEventListener('mousemove', e => {
         window.requestAnimationFrame(() => {
